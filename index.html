@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하루 한 문장 해외여행 영어</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col items-center p-4 sm:p-6">
+
+  <!-- Header -->
+  <header class="w-full max-w-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-6 shadow-lg mb-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <span class="bg-blue-800/60 text-xs font-semibold uppercase px-3 py-1 rounded-full tracking-wider text-blue-100">Daily Travel English</span>
+        <h1 class="text-2xl sm:text-3xl font-bold mt-2">✈️ 하루 한 문장 여행 영어</h1>
+        <p class="text-blue-100 text-sm mt-1">원어민 발음 듣기 & 필수 단어 & 퀴즈 복습</p>
+      </div>
+      <div class="text-right bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20">
+        <div class="text-xs text-blue-200">진행도</div>
+        <div id="progressText" class="text-lg font-bold">1 / 10</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-2xl flex-1 flex flex-col gap-6">
+
+    <!-- Day Navigation Bar -->
+    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between">
+      <button id="prevBtn" onclick="navigateSentence(-1)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm transition flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+        <i class="fa-solid fa-chevron-left"></i> 이전 문장
+      </button>
+      
+      <select id="daySelect" onchange="selectSentence(this.value)" class="bg-slate-50 border border-slate-200 text-slate-800 font-semibold py-2 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+        <!-- JS Options populated here -->
+      </select>
+
+      <button id="nextBtn" onclick="navigateSentence(1)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-sm transition flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed">
+        다음 문장 <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Today's Sentence Card -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+      <!-- Category & Status Badge -->
+      <div class="flex justify-between items-center mb-4">
+        <span id="categoryBadge" class="bg-indigo-50 text-indigo-600 font-semibold text-xs px-3 py-1 rounded-full border border-indigo-100">
+          카테고리
+        </span>
+        <button id="learnedBtn" onclick="toggleLearned()" class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition">
+          <i class="fa-regular fa-circle-check"></i> <span>학습 완료 표시</span>
+        </button>
+      </div>
+
+      <!-- Situation Context -->
+      <p id="situationText" class="text-slate-500 text-xs sm:text-sm mb-3">
+        💡 상황: 식당에서 계산서를 부탁할 때
+      </p>
+
+      <!-- Main English Sentence -->
+      <div class="bg-slate-50 rounded-xl p-5 border border-slate-200/80 mb-4 text-center">
+        <h2 id="englishText" class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          Could I have the check, please?
+        </h2>
+        <p id="koreanText" class="text-slate-600 font-medium text-base sm:text-lg">
+          계산서 좀 주시겠어요?
+        </p>
+      </div>
+
+      <!-- Pronunciation Audio Controls -->
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button onclick="speakSentence(1.0)" class="flex-1 min-w-[140px] bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-volume-high"></i> 원어민 발음 (보통)
+        </button>
+        <button onclick="speakSentence(0.7)" class="flex-1 min-w-[140px] bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-turtle"></i> 천천히 듣기 (0.7x)
+        </button>
+      </div>
+    </div>
+
+    <!-- Vocabulary Section -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+      <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-book-bookmark text-blue-500"></i> 핵심 단어 및 표현
+      </h3>
+      <div id="wordList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- JS Populated Words -->
+      </div>
+    </div>
+
+    <!-- Practice Quiz Section -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-circle-question text-indigo-500"></i> 학습 확인 퀴즈
+        </h3>
+        <span class="text-xs text-slate-400">빈칸에 들어갈 단어를 맞혀보세요</span>
+      </div>
+
+      <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 mb-4">
+        <p id="quizQuestion" class="text-slate-700 font-medium text-sm sm:text-base text-center">
+          "Could I have the _____, please?"
+        </p>
+      </div>
+
+      <!-- Quiz Options Grid -->
+      <div id="quizOptions" class="grid grid-cols-2 gap-2.5">
+        <!-- JS Populated Options -->
+      </div>
+
+      <!-- Quiz Feedback -->
+      <div id="quizResult" class="hidden mt-4 p-4 rounded-xl text-center text-sm font-semibold"></div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-8 text-center text-slate-400 text-xs">
+    <p>매일 하루 한 문장으로 시작하는 해외 여행 영어 ✈️</p>
+  </footer>
+
+  <script>
+    // Daily Travel English Dataset (10 High-Frequency Travel Sentences)
+    const sentences = [
+      {
+        id: 1,
+        day: "Day 1",
+        category: "공항 / 기내",
+        english: "Where is the baggage claim?",
+        korean: "수하물 찾는 곳이 어디인가요?",
+        situation: "공항 도착 후 짐을 찾으러 가야 할 때",
+        words: [
+          { word: "Where", meaning: "어디" },
+          { word: "baggage", meaning: "수하물, 짐" },
+          { word: "claim", meaning: "찾는 곳, 청구" },
+          { word: "baggage claim", meaning: "수하물 수취대" }
+        ],
+        quiz: {
+          sentence: "Where is the baggage _____?",
+          options: ["claim", "desk", "check", "store"],
+          correct: 0,
+          explanation: "'baggage claim'은 공항에서 수하물을 찾는 장소를 뜻합니다."
+        }
+      },
+      {
+        id: 2,
+        day: "Day 2",
+        category: "식당 / 카페",
+        english: "Could I have the check, please?",
+        korean: "계산서 좀 주시겠어요?",
+        situation: "식당에서 식사를 마친 후 계산서를 요청할 때",
+        words: [
+          { word: "Could I have ~?", meaning: "~을 주시겠어요?" },
+          { word: "check", meaning: "계산서 (미국)" },
+          { word: "please", meaning: "부탁합니다" },
+          { word: "bill", meaning: "계산서 (영국)" }
+        ],
+        quiz: {
+          sentence: "Could I have the _____, please?",
+          options: ["check", "ticket", "menu", "paper"],
+          correct: 0,
+          explanation: "미국에서는 식당 계산서를 'check', 영국에서는 'bill'이라고 부릅니다."
+        }
+      },
+      {
+        id: 3,
+        day: "Day 3",
+        category: "숙소 / 호텔",
+        english: "I have a reservation under the name Kim.",
+        korean: "Kim이라는 이름으로 예약했습니다.",
+        situation: "호텔 프런트 데스크에 체크인할 때",
+        words: [
+          { word: "reservation", meaning: "예약" },
+          { word: "under the name", meaning: "~의 이름으로" },
+          { word: "check in", meaning: "체크인하다" }
+        ],
+        quiz: {
+          sentence: "I have a reservation _____ the name Kim.",
+          options: ["under", "with", "for", "by"],
+          correct: 0,
+          explanation: "'~의 이름으로 예약하다'라고 할 때는 전치사 'under'를 사용합니다."
+        }
+      },
+      {
+        id: 4,
+        day: "Day 4",
+        category: "길찾기 / 교통",
+        english: "Where is the nearest subway station?",
+        korean: "가장 가까운 지하철역이 어디인가요?",
+        situation: "길을 잃었거나 대중교통을 찾아야 할 때",
+        words: [
+          { word: "nearest", meaning: "가장 가까운" },
+          { word: "subway station", meaning: "지하철역" },
+          { word: "way", meaning: "길, 방법" }
+        ],
+        quiz: {
+          sentence: "Where is the _____ subway station?",
+          options: ["nearest", "close", "next", "first"],
+          correct: 0,
+          explanation: "'near(가까운)'의 최상급 표현인 'nearest'가 들어갑니다."
+        }
+      },
+      {
+        id: 5,
+        day: "Day 5",
+        category: "쇼핑",
+        english: "Can I try this on?",
+        korean: "이것 입어봐도 되나요?",
+        situation: "옷가게나 매장에서 마음에 드는 옷을 탈의실에서 피팅해보고 싶을 때",
+        words: [
+          { word: "try on", meaning: "입어보다, 착용해보다" },
+          { word: "fitting room", meaning: "탈의실" },
+          { word: "size", meaning: "치수, 사이즈" }
+        ],
+        quiz: {
+          sentence: "Can I try this _____?",
+          options: ["on", "in", "up", "out"],
+          correct: 0,
+          explanation: "'try (something) on'은 옷이나 신발 등을 입어보거나 신어보다라는 숙어입니다."
+        }
+      },
+      {
+        id: 6,
+        day: "Day 6",
+        category: "사진 / 부탁",
+        english: "Could you take a picture of us, please?",
+        korean: "저희 사진 한 장 찍어주실 수 있나요?",
+        situation: "관광지에서 지나가는 사람에게 사진을 부탁할 때",
+        words: [
+          { word: "take a picture", meaning: "사진을 찍다" },
+          { word: "of us", meaning: "우리의" },
+          { word: "press", meaning: "누르다" }
+        ],
+        quiz: {
+          sentence: "Could you _____ a picture of us, please?",
+          options: ["take", "make", "get", "do"],
+          correct: 0,
+          explanation: "'사진을 찍다'는 관용적으로 동사 'take'를 사용하여 'take a picture'라고 합니다."
+        }
+      },
+      {
+        id: 7,
+        day: "Day 7",
+        category: "쇼핑 / 결제",
+        english: "Can I pay with a credit card?",
+        korean: "신용카드로 결제할 수 있나요?",
+        situation: "상점이나 식당에서 결제 시 카드가 가능한지 물어볼 때",
+        words: [
+          { word: "pay with", meaning: "~로 결제하다" },
+          { word: "credit card", meaning: "신용카드" },
+          { word: "cash", meaning: "현금" }
+        ],
+        quiz: {
+          sentence: "Can I pay _____ a credit card?",
+          options: ["with", "by", "in", "to"],
+          correct: 0,
+          explanation: "신용카드로 지불할 때는 'pay with a credit card' 또는 'pay by credit card'를 씁니다."
+        }
+      },
+      {
+        id: 8,
+        day: "Day 8",
+        category: "식당 / 질문",
+        english: "Could you recommend a popular local dish?",
+        korean: "현지 대표 인기 메뉴를 추천해주시겠어요?",
+        situation: "메뉴판을 보고 무엇을 주문해야 할지 모를 때",
+        words: [
+          { word: "recommend", meaning: "추천하다" },
+          { word: "popular", meaning: "인기 있는" },
+          { word: "local dish", meaning: "현지 요리" }
+        ],
+        quiz: {
+          sentence: "Could you _____ a popular local dish?",
+          options: ["recommend", "order", "choose", "suggests"],
+          correct: 0,
+          explanation: "'추천하다'를 의미하는 동사는 'recommend'입니다."
+        }
+      },
+      {
+        id: 9,
+        day: "Day 9",
+        category: "응급 / 도음",
+        english: "I lost my passport.",
+        korean: "여권을 잃어버렸어요.",
+        situation: "여행 중 여권을 분실하여 대사관이나 경찰서에 도움을 청할 때",
+        words: [
+          { word: "lost", meaning: "잃어버렸다 (lose의 과거)" },
+          { word: "passport", meaning: "여권" },
+          { word: "embassy", meaning: "대사관" }
+        ],
+        quiz: {
+          sentence: "I _____ my passport.",
+          options: ["lost", "missed", "dropped", "forgot"],
+          correct: 0,
+          explanation: "물건이나 여권을 '잃어버렸다'고 할 때는 'lost'를 사용합니다."
+        }
+      },
+      {
+        id: 10,
+        day: "Day 10",
+        category: "감사 / 인사",
+        english: "Thank you for your help.",
+        korean: "도와주셔서 감사합니다.",
+        situation: "현지인이나 친절한 직원의 도움을 받았을 때 감사를 전할 때",
+        words: [
+          { word: "thank you for", meaning: "~에 대해 감사하다" },
+          { word: "help", meaning: "도움" },
+          { word: "kindness", meaning: "친절" }
+        ],
+        quiz: {
+          sentence: "Thank you _____ your help.",
+          options: ["for", "to", "with", "of"],
+          correct: 0,
+          explanation: "'~에 대해 감사하다'라고 할 때는 전치사 'for'를 사용하여 'Thank you for ~' 구조를 만듭니다."
+        }
+      }
+    ];
+
+    let currentIndex = 0;
+    let learnedSet = new Set(JSON.parse(localStorage.getItem('learnedSentences') || '[]'));
+
+    // Initialize UI
+    window.addEventListener('DOMContentLoaded', () => {
+      populateDropdown();
+      renderCard(currentIndex);
+    });
+
+    function populateDropdown() {
+      const select = document.getElementById('daySelect');
+      select.innerHTML = '';
+      sentences.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        const isLearned = learnedSet.has(item.id) ? ' ✅' : '';
+        option.textContent = `${item.day} : ${item.english.substring(0, 20)}...${isLearned}`;
+        select.appendChild(option);
+      });
+    }
+
+    function renderCard(index) {
+      currentIndex = index;
+      const data = sentences[index];
+
+      // Update Header Progress
+      document.getElementById('progressText').textContent = `${currentIndex + 1} / ${sentences.length}`;
+      document.getElementById('daySelect').value = index;
+
+      // Update Prev / Next Buttons
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === sentences.length - 1;
+
+      // Category & Situation
+      document.getElementById('categoryBadge').textContent = `${data.day} • ${data.category}`;
+      document.getElementById('situationText').textContent = `💡 상황: ${data.situation}`;
+
+      // Sentence & Korean Translation
+      document.getElementById('englishText').textContent = data.english;
+      document.getElementById('koreanText').textContent = data.korean;
+
+      // Learned Button State
+      const learnedBtn = document.getElementById('learnedBtn');
+      if (learnedSet.has(data.id)) {
+        learnedBtn.className = "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-emerald-50 text-emerald-600 border-emerald-200 transition";
+        learnedBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>학습 완료됨</span>`;
+      } else {
+        learnedBtn.className = "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition";
+        learnedBtn.innerHTML = `<i class="fa-regular fa-circle-check"></i> <span>학습 완료 표시</span>`;
+      }
+
+      // Words List
+      const wordListContainer = document.getElementById('wordList');
+      wordListContainer.innerHTML = '';
+      data.words.forEach(w => {
+        const wordCard = document.createElement('div');
+        wordCard.className = "bg-slate-50 border border-slate-200/70 p-3 rounded-xl flex items-center justify-between";
+        wordCard.innerHTML = `
+          <div>
+            <div class="font-bold text-slate-800 text-sm">${w.word}</div>
+            <div class="text-xs text-slate-500">${w.meaning}</div>
+          </div>
+          <button onclick="speakWord('${w.word.replace(/'/g, "\\'")}')" class="text-blue-500 hover:text-blue-700 p-2 text-sm" title="발음 듣기">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+        `;
+        wordListContainer.appendChild(wordCard);
+      });
+
+      // Quiz Setup
+      document.getElementById('quizQuestion').textContent = `"${data.quiz.sentence}"`;
+      const quizOptions = document.getElementById('quizOptions');
+      quizOptions.innerHTML = '';
+      document.getElementById('quizResult').className = "hidden mt-4 p-4 rounded-xl text-center text-sm font-semibold";
+
+      data.quiz.options.forEach((opt, optIdx) => {
+        const btn = document.createElement('button');
+        btn.className = "w-full py-2.5 px-3 bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-slate-800 font-medium rounded-xl text-sm transition";
+        btn.textContent = opt;
+        btn.onclick = () => checkQuizAnswer(optIdx, data.quiz.correct, data.quiz.explanation);
+        quizOptions.appendChild(btn);
+      });
+    }
+
+    // Native Speech Synthesis
+    function speakSentence(rate = 1.0) {
+      if (!('speechSynthesis' in window)) {
+        alert('이 브라우저는 음성 재생을 지원하지 않습니다.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const text = sentences[currentIndex].english;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = rate;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakWord(word) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Quiz Verification logic
+    function checkQuizAnswer(selectedIndex, correctIndex, explanation) {
+      const resultDiv = document.getElementById('quizResult');
+      resultDiv.classList.remove('hidden');
+
+      if (selectedIndex === correctIndex) {
+        resultDiv.className = "mt-4 p-4 rounded-xl text-center text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200";
+        resultDiv.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> 정답입니다! 🎉<br><span class="font-normal text-xs text-emerald-600 mt-1 block">${explanation}</span>`;
+      } else {
+        resultDiv.className = "mt-4 p-4 rounded-xl text-center text-sm font-semibold bg-rose-50 text-rose-700 border border-rose-200";
+        resultDiv.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1"></i> 아쉽네요! 다시 시도해보세요.<br><span class="font-normal text-xs text-rose-600 mt-1 block">${explanation}</span>`;
+      }
+    }
+
+    // Toggle Learned state
+    function toggleLearned() {
+      const currentId = sentences[currentIndex].id;
+      if (learnedSet.has(currentId)) {
+        learnedSet.delete(currentId);
+      } else {
+        learnedSet.add(currentId);
+      }
+      localStorage.setItem('learnedSentences', JSON.stringify(Array.from(learnedSet)));
+      populateDropdown();
+      renderCard(currentIndex);
+    }
+
+    // Navigation logic
+    function navigateSentence(direction) {
+      const newIndex = currentIndex + direction;
+      if (newIndex >= 0 && newIndex < sentences.length) {
+        renderCard(newIndex);
+      }
+    }
+
+    function selectSentence(index) {
+      renderCard(parseInt(index, 10));
+    }
+  </script>
+</body>
+</html>
